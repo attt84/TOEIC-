@@ -1,0 +1,80 @@
+.sidebar {
+    height: 100vh;
+    padding: 20px;
+    background-color: #f8f9fa;
+    position: fixed;
+    overflow-y: auto;
+    transition: transform 0.3s ease-in-out;
+}
+
+.vocabulary-sidebar {
+    left: 0;
+    border-right: 1px solid #dee2e6;
+}
+
+.translation-sidebar {
+    right: 0;
+    border-left: 1px solid #dee2e6;
+}
+
+.sidebar.hidden {
+    transform: translateX(-100%);
+}
+
+.translation-sidebar.hidden {
+    transform: translateX(100%);
+}
+
+.main-content {
+    margin: 0 25%;
+    padding: 20px;
+}
+
+.controls {
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.article-content {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.highlighted-word {
+    position: relative;
+    cursor: help;
+    background-color: #e9ecef;
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+.word-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 3px;
+    font-size: 14px;
+    white-space: nowrap;
+    display: none;
+    z-index: 1000;
+}
+
+.highlighted-word:hover .word-tooltip {
+    display: block;
+}
+
+.toggle-sidebar {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+}

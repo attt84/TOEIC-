@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOEIC News Study</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Vocabulary Sidebar -->
+            <div class="col-md-3 sidebar vocabulary-sidebar" id="vocabularySidebar">
+                <h3>Advanced Vocabulary</h3>
+                <div id="vocabularyList"></div>
+                <button class="btn btn-sm btn-primary toggle-sidebar" onclick="toggleVocabularySidebar()">
+                    Toggle Vocabulary
+                </button>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-6 main-content">
+                <h1 class="text-center mb-4">TOEIC News Study</h1>
+                
+                <!-- Controls -->
+                <div class="controls mb-4">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <select class="form-select" id="category">
+                                <option value="technology">IT</option>
+                                <option value="politics">Politics</option>
+                                <option value="business">Business</option>
+                                <option value="science">Science</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <select class="form-select" id="wordCount">
+                                <option value="200">200 words</option>
+                                <option value="300">300 words</option>
+                                <option value="500">500 words</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-primary w-100" onclick="generateArticle()">
+                                Generate Article
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Article Content -->
+                <div class="article-content" id="articleContent"></div>
+            </div>
+
+            <!-- Translation Sidebar -->
+            <div class="col-md-3 sidebar translation-sidebar" id="translationSidebar">
+                <h3>Japanese Translation</h3>
+                <div id="translationContent"></div>
+                <button class="btn btn-sm btn-primary toggle-sidebar" onclick="toggleTranslationSidebar()">
+                    Toggle Translation
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
