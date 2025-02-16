@@ -25,9 +25,10 @@ english_words = set(words.words())
 # Load spaCy model for CEFR level analysis
 nlp = spacy.load('en_core_web_sm')
 
-CATEGORIES = {
+# News API category mapping
+CATEGORY_MAPPING = {
     'technology': 'technology',
-    'politics': 'politics',
+    'politics': 'general',  # News API doesn't have a specific politics category
     'business': 'business',
     'science': 'science'
 }
@@ -56,12 +57,15 @@ def generate_article():
         category = data.get('category', 'technology')
         word_count = int(data.get('word_count', 300))
         
+        # Map the frontend category to News API category
+        news_api_category = CATEGORY_MAPPING.get(category, 'general')
+        
         # Get news from News API
         try:
-            news = newsapi.get_top_headlines(category=category, language='en', page_size=5)
+            news = newsapi.get_top_headlines(category=news_api_category, language='en', page_size=5)
             
             if not news['articles']:
-                return jsonify({'error': 'No news found for the selected category'}), 404
+                return jsonify({'error': f'No news found for the category: {category}'}), 404
         except Exception as e:
             print(f"News API Error: {str(e)}")
             return jsonify({'error': f'Error fetching news: {str(e)}'}), 500
