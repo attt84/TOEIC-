@@ -1,14 +1,14 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, request, jsonify, render_template
+from newsapi import NewsApiClient
+import google.generativeai as genai
 import os
 from dotenv import load_dotenv
-import google.generativeai as genai
-from newsapi import NewsApiClient
-import json
 import spacy
 import nltk
 from nltk.corpus import words
-from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from flask_sqlalchemy import SQLAlchemy
+import json
 
 # Load environment variables
 load_dotenv()
