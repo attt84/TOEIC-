@@ -56,11 +56,11 @@ class SavedVocabulary(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     word = db.Column(db.String(100), nullable=False)
     meaning = db.Column(db.String(200))
-    example = db.Column(db.Text)  
+    example = db.Column(db.Text)  # 例文を保存
     article_id = db.Column(db.Integer, db.ForeignKey('saved_article.id'))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-class GrammarNote(db.Model):  
+class GrammarNote(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     sentence = db.Column(db.Text, nullable=False)
     grammar_point = db.Column(db.Text, nullable=False)
@@ -69,7 +69,8 @@ class GrammarNote(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 with app.app_context():
-    db.create_all()
+    db.drop_all()  # 既存のテーブルを削除
+    db.create_all()  # 新しいテーブルを作成
 
 def get_cefr_level(word):
     # This is a simplified version. In production, you would want to use a proper CEFR word list
@@ -182,7 +183,7 @@ def save_vocabulary():
         vocab = SavedVocabulary(
             word=data['word'],
             meaning=data['meaning'],
-            example=data.get('example'),
+            example=data.get('example', ''),  # デフォルト値を空文字列に設定
             article_id=data.get('article_id')
         )
         db.session.add(vocab)
@@ -224,7 +225,7 @@ def get_saved_vocabulary():
         'id': v.id,
         'word': v.word,
         'meaning': v.meaning,
-        'example': v.example,
+        'example': v.example or '',  # Noneの場合は空文字列を返す
         'article_id': v.article_id,
         'created_at': v.created_at.isoformat()
     } for v in vocab])
