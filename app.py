@@ -56,6 +56,15 @@ class SavedVocabulary(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     word = db.Column(db.String(100), nullable=False)
     meaning = db.Column(db.String(200))
+    example = db.Column(db.Text)  
+    article_id = db.Column(db.Integer, db.ForeignKey('saved_article.id'))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class GrammarNote(db.Model):  
+    id = db.Column(db.Integer, primary_key=True)
+    sentence = db.Column(db.Text, nullable=False)
+    grammar_point = db.Column(db.Text, nullable=False)
+    explanation = db.Column(db.Text, nullable=False)
     article_id = db.Column(db.Integer, db.ForeignKey('saved_article.id'))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -173,9 +182,26 @@ def save_vocabulary():
         vocab = SavedVocabulary(
             word=data['word'],
             meaning=data['meaning'],
+            example=data.get('example'),
             article_id=data.get('article_id')
         )
         db.session.add(vocab)
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/save_grammar_note', methods=['POST'])
+def save_grammar_note():
+    try:
+        data = request.json
+        note = GrammarNote(
+            sentence=data['sentence'],
+            grammar_point=data['grammar_point'],
+            explanation=data['explanation'],
+            article_id=data.get('article_id')
+        )
+        db.session.add(note)
         db.session.commit()
         return jsonify({'success': True})
     except Exception as e:
@@ -198,9 +224,22 @@ def get_saved_vocabulary():
         'id': v.id,
         'word': v.word,
         'meaning': v.meaning,
+        'example': v.example,
         'article_id': v.article_id,
         'created_at': v.created_at.isoformat()
     } for v in vocab])
+
+@app.route('/get_saved_grammar_notes', methods=['GET'])
+def get_saved_grammar_notes():
+    notes = GrammarNote.query.order_by(GrammarNote.created_at.desc()).all()
+    return jsonify([{
+        'id': n.id,
+        'sentence': n.sentence,
+        'grammar_point': n.grammar_point,
+        'explanation': n.explanation,
+        'article_id': n.article_id,
+        'created_at': n.created_at.isoformat()
+    } for n in notes])
 
 @app.route('/translate', methods=['POST'])
 def translate():
@@ -221,6 +260,57 @@ def translate():
             'translation': translation_text
         })
         
+    except Exception as e:
+        print(f"General Error: {str(e)}")
+        return jsonify({'error': f'An error occurred: {str(e)}'}), 500
+
+@app.route('/analyze_grammar', methods=['POST'])
+def analyze_grammar():
+    try:
+        data = request.json
+        text = data.get('text', '')
+        
+        # Gemini APIを使用して文法解析
+        analysis_prompt = f"""
+        Analyze the following English sentence for TOEIC study:
+        "{text}"
+        
+        Provide a detailed explanation in Japanese including:
+        1. Grammar points used
+        2. Sentence structure
+        3. Key expressions and their usage
+        4. TOEIC test-taking tips related to this grammar
+        
+        Format the response as a JSON with these fields:
+        - grammar_point: Main grammar point title
+        - explanation: Detailed explanation
+        """
+        
+        try:
+            response = model.generate_content(analysis_prompt)
+            analysis = response.text
+            
+            # レスポンスをJSONとしてパース
+            try:
+                analysis_json = json.loads(analysis)
+            except:
+                # JSONパースに失敗した場合は、シンプルな形式で返す
+                analysis_json = {
+                    'grammar_point': '文法ポイント',
+                    'explanation': analysis
+                }
+            
+            analysis_json['sentence'] = text
+            return jsonify(analysis_json)
+            
+        except Exception as e:
+            print(f"Grammar Analysis Error: {str(e)}")
+            return jsonify({
+                'sentence': text,
+                'grammar_point': 'エラー',
+                'explanation': '文法解析中にエラーが発生しました。'
+            }), 500
+            
     except Exception as e:
         print(f"General Error: {str(e)}")
         return jsonify({'error': f'An error occurred: {str(e)}'}), 500

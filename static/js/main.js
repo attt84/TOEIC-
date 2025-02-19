@@ -97,7 +97,8 @@ document.addEventListener('DOMContentLoaded', function() {
             wordList.innerHTML = '';
             
             if (data.vocabulary) {
-                data.vocabulary.forEach(word => {
+                const uniqueWords = getUniqueWords(data.vocabulary);
+                uniqueWords.forEach(word => {
                     const wordDiv = document.createElement('div');
                     wordDiv.className = 'word-item';
                     wordDiv.innerHTML = `
@@ -269,7 +270,166 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Initial load of saved items
+    // 重複のない単語リストを生成
+    function getUniqueWords(words) {
+        return [...new Set(words)];
+    }
+
+    // テキストの強調表示を管理
+    function highlightText(element, text) {
+        const content = element.innerHTML;
+        const regex = new RegExp(`(${text})`, 'gi');
+        element.innerHTML = content.replace(regex, '<span class="highlight-text">$1</span>');
+    }
+
+    // 強調表示をクリア
+    function clearHighlights(element) {
+        element.innerHTML = element.innerHTML.replace(/<span class="highlight-text">|<\/span>/g, '');
+    }
+
+    // 文法解析機能
+    async function analyzeGrammar(text) {
+        try {
+            const response = await fetch('/analyze_grammar', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ text })
+            });
+            return await response.json();
+        } catch (error) {
+            console.error('Grammar analysis error:', error);
+            return null;
+        }
+    }
+
+    // コンテキストメニューを作成
+    function createContextMenu(x, y, text) {
+        const menu = document.createElement('div');
+        menu.className = 'context-menu';
+        menu.style.left = `${x}px`;
+        menu.style.top = `${y}px`;
+        
+        const analyzeItem = document.createElement('div');
+        analyzeItem.className = 'context-menu-item';
+        analyzeItem.textContent = '文法を解析';
+        analyzeItem.onclick = async () => {
+            const analysis = await analyzeGrammar(text);
+            if (analysis) {
+                showGrammarNote(analysis);
+            }
+            document.body.removeChild(menu);
+        };
+        
+        menu.appendChild(analyzeItem);
+        document.body.appendChild(menu);
+        
+        // メニュー以外をクリックしたら閉じる
+        document.addEventListener('click', function closeMenu(e) {
+            if (!menu.contains(e.target)) {
+                document.body.removeChild(menu);
+                document.removeEventListener('click', closeMenu);
+            }
+        });
+    }
+
+    // 文法ノートを表示
+    function showGrammarNote(analysis) {
+        const note = document.createElement('div');
+        note.className = 'grammar-note';
+        note.innerHTML = `
+            <div class="grammar-note-title">${analysis.grammar_point}</div>
+            <div class="grammar-explanation">${analysis.explanation}</div>
+            <button class="btn btn-sm btn-primary mt-2" onclick="saveGrammarNote(${JSON.stringify(analysis)})">
+                文法集に保存
+            </button>
+        `;
+        
+        document.getElementById('grammarNotes').appendChild(note);
+    }
+
+    // 文法ノートを保存
+    async function saveGrammarNote(analysis) {
+        try {
+            const response = await fetch('/save_grammar_note', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    sentence: analysis.sentence,
+                    grammar_point: analysis.grammar_point,
+                    explanation: analysis.explanation,
+                    article_id: currentArticle?.id
+                })
+            });
+            
+            if (response.ok) {
+                showToast('文法ノートを保存しました');
+                loadSavedGrammarNotes();
+            }
+        } catch (error) {
+            console.error('Error saving grammar note:', error);
+            showToast('文法ノートの保存に失敗しました', 'error');
+        }
+    }
+
+    // 保存された文法ノートを読み込む
+    async function loadSavedGrammarNotes() {
+        try {
+            const response = await fetch('/get_saved_grammar_notes');
+            const notes = await response.json();
+            
+            const container = document.getElementById('savedGrammarNotes');
+            container.innerHTML = '';
+            
+            notes.forEach(note => {
+                const noteElement = document.createElement('div');
+                noteElement.className = 'grammar-note mb-3';
+                noteElement.innerHTML = `
+                    <div class="grammar-note-title">${note.grammar_point}</div>
+                    <div class="grammar-sentence font-italic">${note.sentence}</div>
+                    <div class="grammar-explanation">${note.explanation}</div>
+                    <div class="text-muted small">${new Date(note.created_at).toLocaleDateString()}</div>
+                `;
+                container.appendChild(noteElement);
+            });
+        } catch (error) {
+            console.error('Error loading grammar notes:', error);
+        }
+    }
+
+    // 英文の選択イベント
+    document.getElementById('articleContent').addEventListener('mouseup', function(e) {
+        const selection = window.getSelection();
+        if (selection.toString().trim()) {
+            createContextMenu(e.pageX, e.pageY, selection.toString());
+        }
+    });
+    
+    // 単語クリックイベント
+    document.getElementById('wordList').addEventListener('click', function(e) {
+        const wordItem = e.target.closest('.word-item');
+        if (wordItem) {
+            const word = wordItem.querySelector('.highlight').textContent;
+            const articleText = document.querySelector('.article-text');
+            
+            clearHighlights(articleText);
+            highlightText(articleText, word);
+        }
+    });
+    
+    // 翻訳テキストの選択イベント
+    document.getElementById('translation').addEventListener('mouseup', function(e) {
+        const selection = window.getSelection();
+        if (selection.toString().trim()) {
+            // TODO: 選択された日本語テキストに対応する英文を強調表示
+        }
+    });
+    
+    // 初期データの読み込み
+    loadSavedGrammarNotes();
     loadSavedArticles();
     loadSavedVocabulary();
 });

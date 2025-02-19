@@ -78,3 +78,92 @@
     left: 50%;
     transform: translateX(-50%);
 }
+
+.sidebar {
+    position: fixed;
+    top: 60px;
+    bottom: 0;
+    background: white;
+    padding: 20px;
+    overflow-y: auto;
+    transition: all 0.3s ease;
+    resize: horizontal;
+    min-width: 250px;
+    max-width: 50vw;
+}
+
+.sidebar.left {
+    left: 0;
+    border-right: 2px solid #eee;
+}
+
+.sidebar.right {
+    right: 0;
+    border-left: 2px solid #eee;
+}
+
+.highlight-text {
+    background-color: #fff3cd;
+    padding: 2px;
+    border-radius: 2px;
+    transition: background-color 0.3s ease;
+}
+
+.highlight-translation {
+    background-color: #cfe2ff;
+    padding: 2px;
+    border-radius: 2px;
+    transition: background-color 0.3s ease;
+}
+
+.word-item {
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    border: 1px solid #eee;
+}
+
+.word-item:hover {
+    background-color: #f8f9fa;
+}
+
+.word-example {
+    font-size: 0.9em;
+    color: #6c757d;
+    margin-top: 4px;
+    padding-left: 8px;
+    border-left: 2px solid #dee2e6;
+}
+
+.grammar-note {
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    padding: 12px;
+    margin-top: 8px;
+}
+
+.grammar-note-title {
+    font-weight: bold;
+    color: #0d6efd;
+    margin-bottom: 8px;
+}
+
+.context-menu {
+    position: fixed;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 8px 0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    z-index: 1000;
+}
+
+.context-menu-item {
+    padding: 8px 16px;
+    cursor: pointer;
+}
+
+.context-menu-item:hover {
+    background-color: #f8f9fa;
+}
