@@ -143,7 +143,7 @@ def generate_article():
         return jsonify({
             'article': article_text,
             'translation': translation_text,
-            'advanced_words': advanced_words
+            'vocabulary': [word['word'] for word in advanced_words]
         })
         
     except Exception as e:
@@ -201,6 +201,29 @@ def get_saved_vocabulary():
         'article_id': v.article_id,
         'created_at': v.created_at.isoformat()
     } for v in vocab])
+
+@app.route('/translate', methods=['POST'])
+def translate():
+    try:
+        data = request.json
+        text = data.get('text', '')
+        
+        # Generate Japanese translation
+        translation_prompt = f"Translate this English word or phrase to natural Japanese: {text}"
+        try:
+            translation_response = model.generate_content(translation_prompt)
+            translation_text = translation_response.text
+        except Exception as e:
+            print(f"Translation Error: {str(e)}")
+            translation_text = "翻訳エラー"
+        
+        return jsonify({
+            'translation': translation_text
+        })
+        
+    except Exception as e:
+        print(f"General Error: {str(e)}")
+        return jsonify({'error': f'An error occurred: {str(e)}'}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
